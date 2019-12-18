@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"math/rand"
 	"os"
 	"path"
@@ -23,8 +24,17 @@ var AccessToken = strconv.Itoa(rand.Int())
 func init() {
 	_, filename, _, _ := runtime.Caller(0)
 	currentPath := path.Dir(filename)
-	fullpath := path.Join(currentPath, "./data", "winners.json")
+	fullpath := path.Join(currentPath, "./../data", "winners.json")
 	LoadFromJSON(fullpath)
+
+	files, err := ioutil.ReadDir(currentPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, file := range files {
+		fmt.Println("File: " + file.Name())
+	}
 }
 
 var winners Winners
