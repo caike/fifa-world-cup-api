@@ -1,7 +1,11 @@
 FROM heroku/heroku:18-build as build
 
 COPY . /app
+RUN mkdir -p /app/data
+COPY ./data/winners.json /app/data/
+
 WORKDIR /app
+
 
 # Setup buildpack
 RUN mkdir -p /tmp/buildpack/heroku/go /tmp/build_cache /tmp/env
