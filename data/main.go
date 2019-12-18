@@ -23,7 +23,7 @@ var AccessToken = strconv.Itoa(rand.Int())
 func init() {
 	_, filename, _, _ := runtime.Caller(0)
 	currentPath := path.Dir(filename)
-	fullpath := path.Join(currentPath, "./../../data", "winners.json")
+	fullpath := path.Join(currentPath, "./data", "winners.json")
 	LoadFromJSON(fullpath)
 }
 
