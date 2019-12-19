@@ -16,7 +16,6 @@ FROM heroku/heroku:18
 RUN mkdir -p /app/data
 
 COPY --from=build /app /app
-COPY --from=build /app/data /app/data
 RUN ls -lha /app/data
 
 ENV HOME /app

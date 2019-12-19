@@ -6,10 +6,8 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"math/rand"
 	"os"
-	"path"
 	"runtime"
 	"strconv"
 	"strings"
@@ -22,19 +20,7 @@ import (
 var AccessToken = strconv.Itoa(rand.Int())
 
 func init() {
-	_, filename, _, _ := runtime.Caller(0)
-	currentPath := path.Dir(filename)
-	fullpath := path.Join(currentPath, "./../data", "winners.json")
-	LoadFromJSON(fullpath)
-
-	files, err := ioutil.ReadDir(currentPath)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	for _, file := range files {
-		fmt.Println("File: " + file.Name())
-	}
+	LoadFromJSON()
 }
 
 var winners Winners
@@ -62,9 +48,10 @@ func (w Winner) isValidWinner() bool {
 
 // LoadFromJSON loads/resets the winners from
 // the JSON file
-func LoadFromJSON(fullpath string) {
+func LoadFromJSON() {
 	// Load data from JSON into memory
-	jsonFile, err := os.Open(fullpath)
+	//jsonFile, err := os.Open(fullpath)
+	jsonFile, err := os.Open("winners.json")
 	if err != nil {
 		fmt.Println(err)
 	}
