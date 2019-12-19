@@ -13,9 +13,12 @@ RUN STACK=heroku-18 /tmp/buildpack/heroku/go/bin/compile /app /tmp/build_cache /
 # Prepare final, minimal image
 FROM heroku/heroku:18
 
-COPY --from=build /app /app
 RUN mkdir -p /app/data
-COPY --from=build /app/data/winners.json /app/data
+
+COPY --from=build /app /app
+COPY --from=build /app/data /app/data
+RUN ls -lha /app/data
+
 ENV HOME /app
 WORKDIR /app
 RUN useradd -m heroku
