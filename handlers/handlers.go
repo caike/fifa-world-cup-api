@@ -50,6 +50,8 @@ func AddNewWinner(res http.ResponseWriter, req *http.Request) {
 
 // WinnersHandler is the dispatcher for all /winners URL
 func WinnersHandler(res http.ResponseWriter, req *http.Request) {
+	(res).Header().Set("Access-Control-Allow-Origin", "*")
+
 	switch req.Method {
 	case http.MethodGet:
 		ListWinners(res, req)
