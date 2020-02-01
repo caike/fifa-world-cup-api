@@ -1,3 +1,7 @@
+# FIFA API
+
+Simple web API returning a list of FIFA World Cup winners.
+Login handler expects `foo@bar.com / secret`
 
 # go-getting-started
 
