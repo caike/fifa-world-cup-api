@@ -17,7 +17,9 @@ func main() {
 		log.Fatal("$PORT must be set")
 	}
 
+	http.HandleFunc("/login", handlers.LoginHandler)
 	http.HandleFunc("/", handlers.RootHandler)
 	http.HandleFunc("/winners", handlers.WinnersHandler)
+
 	http.ListenAndServe(":"+port, nil)
 }
