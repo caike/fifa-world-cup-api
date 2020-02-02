@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fifa-heroku/data"
 	"net/http"
+	"time"
 )
 
 // RootHandler returns an empty body status code
@@ -81,6 +82,7 @@ func LoginHandler(res http.ResponseWriter, req *http.Request) {
 		res.WriteHeader(http.StatusOK)
 		return
 	}
+	time.Sleep(3 * time.Second)
 	res.Header().Add("Access-Control-Allow-Origin", "*")
 	//res.Header().Add("Content-Type", "application/json")
 
