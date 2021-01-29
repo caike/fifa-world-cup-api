@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fifa-heroku/data"
 	"fifa-heroku/handlers"
 	"log"
 	"net/http"
@@ -9,7 +8,7 @@ import (
 )
 
 func main() {
-	data.PrintUsage()
+	//data.PrintUsage()
 
 	port := os.Getenv("PORT")
 

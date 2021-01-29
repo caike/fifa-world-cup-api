@@ -8,9 +8,7 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"os"
-	"runtime"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -116,6 +114,7 @@ func AddNewWinner(payload io.Reader) error {
 }
 
 // PrintUsage prints test commands to the console
+/*
 func PrintUsage() {
 	usage := `
 	
@@ -158,3 +157,4 @@ func PrintUsage() {
 		fmt.Println(strings.ReplaceAll(usage, "%NEXTLINE%", "\\"))
 	}
 }
+*/

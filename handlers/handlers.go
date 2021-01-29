@@ -3,9 +3,15 @@ package handlers
 import (
 	"encoding/json"
 	"fifa-heroku/data"
+	"fmt"
 	"net/http"
+	"os"
 	"time"
+
+	"github.com/dgrijalva/jwt-go"
 )
+
+var jwtSecret = os.Getenv("JWT_SECRET")
 
 // RootHandler returns an empty body status code
 func RootHandler(res http.ResponseWriter, req *http.Request) {
@@ -33,45 +39,67 @@ func ListWinners(res http.ResponseWriter, req *http.Request) {
 	}
 }
 
-// AddNewWinner adds new winner to the list
-func AddNewWinner(res http.ResponseWriter, req *http.Request) {
-	accessToken := req.Header.Get("X-ACCESS-TOKEN")
-	isTokenValid := data.IsAccessTokenValid(accessToken)
-	if !isTokenValid {
-		res.WriteHeader(http.StatusUnauthorized)
-	} else {
-		err := data.AddNewWinner(req.Body)
-		if err != nil {
-			res.WriteHeader(http.StatusUnprocessableEntity)
-			return
-		}
-		res.WriteHeader(http.StatusCreated)
-	}
-
-}
-
-// WinnersHandler is the dispatcher for all /winners URL
-func WinnersHandler(res http.ResponseWriter, req *http.Request) {
-	(res).Header().Set("Access-Control-Allow-Origin", "*")
-
-	switch req.Method {
-	case http.MethodGet:
-		ListWinners(res, req)
-	case http.MethodPost:
-		AddNewWinner(res, req)
-	default:
-		res.WriteHeader(http.StatusMethodNotAllowed)
-	}
-}
-
 type login struct {
 	Email    string
 	Password string
 }
 
 type user struct {
-	Email string
 	Token string
+}
+// // AddNewWinner adds new winner to the list
+// func AddNewWinner(res http.ResponseWriter, req *http.Request) {
+// 	accessToken := req.Header.Get("X-ACCESS-TOKEN")
+// 	isTokenValid := data.IsAccessTokenValid(accessToken)
+// 	if !isTokenValid {
+// 		res.WriteHeader(http.StatusUnauthorized)
+// 	} else {
+// 		err := data.AddNewWinner(req.Body)
+// 		if err != nil {
+// 			res.WriteHeader(http.StatusUnprocessableEntity)
+// 			return
+// 		}
+// 		res.WriteHeader(http.StatusCreated)
+// 	}
+
+// }
+
+// WinnersHandler is the dispatcher for all /winners URL
+func WinnersHandler(res http.ResponseWriter, req *http.Request) {
+	(res).Header().Set("Access-Control-Allow-Origin", "*")
+
+	var loggedUser user
+
+	err := json.NewDecoder(req.Body).Decode(&loggedUser)
+	if err != nil {
+		http.Error(res, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	token, err := jwt.Parse(loggedUser.Token, func(token *jwt.Token) (interface{}, error) {
+		// Don't forget to validate the alg is what you expect:
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+		}
+
+		// hmacSampleSecret is a []byte containing your secret, e.g. []byte("my_secret_key")
+		return []byte(jwtSecret), nil
+	})
+
+
+	if _, ok := token.Claims.(jwt.MapClaims); !ok || !token.Valid {
+		http.Error(res, "Invalid Credentials", http.StatusUnauthorized)
+		return
+	}
+
+	switch req.Method {
+	case http.MethodGet:
+		ListWinners(res, req)
+	// case http.MethodPost:
+	// 	AddNewWinner(res, req)
+	default:
+		res.WriteHeader(http.StatusMethodNotAllowed)
+	}
 }
 
 // LoginHandler validates user credentials
@@ -84,7 +112,7 @@ func LoginHandler(res http.ResponseWriter, req *http.Request) {
 	}
 	time.Sleep(3 * time.Second)
 	res.Header().Add("Access-Control-Allow-Origin", "*")
-	//res.Header().Add("Content-Type", "application/json")
+	res.Header().Add("Content-Type", "application/json")
 
 	var logi login
 
@@ -98,7 +126,17 @@ func LoginHandler(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, "Invalid Credentials", http.StatusUnauthorized)
 		return
 	}
-	user := user{Email: logi.Email, Token: "eyJ1eXAiOoJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJjcmVhdGVkIjoxNTgwNTY4MjgyMDAwLCJleHAiOjE1ODExNzMwODIwMDAsInBlc3NvYV9pZCI6NDQyMjEsInVzZXJuYW1lIjoiY2FybG9zQGlkb3B0ZXJsYWJzLmNvbS5iciJ9.6JyJvGRaT3X8fcF_HkDl7YFJPIr8ZqG8rBr5pbC1hBo"}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"email": logi.Email,
+		"nbf": time.Date(2015, 10, 10, 12, 0, 0, 0, time.UTC).Unix(),
+	})
+	tokenString, err := token.SignedString([]byte(jwtSecret))
+	if err != nil{
+		http.Error(res, err.Error(), http.StatusBadRequest)
+		return
+	}
+	user := user{Token: tokenString}
+
 	js, err := json.Marshal(user)
 	if err != nil {
 		http.Error(res, err.Error(), http.StatusInternalServerError)
@@ -112,4 +150,12 @@ func LoginHandler(res http.ResponseWriter, req *http.Request) {
  -H "accept: application/json" \
  -H "Content-Type: application/json" \
  -d "{\"email\":\"foo@bar.com\",\"password\":\"secret\"}"
+
+ // read jwt token and then make authenticated
+ // calls as so:
+
+ curl -X GET "http://localhost:8080/winners" \
+ -H "accept: application/json" \
+ -H "Content-Type: application/json" \
+ -d "{\"Token\":\"use-jwt-token-here\"}"
 **/
